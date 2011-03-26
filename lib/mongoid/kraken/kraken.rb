@@ -7,7 +7,6 @@ module Mongoid
       referenced_in   :parent,   :class_name => 'Mongoid::Kraken::Kraken'
       references_many :children, :inverse_of => :parent, :class_name => 'Mongoid::Kraken::Kraken'
       references_and_referenced_in_many :tentacles, :class_name => 'Mongoid::Kraken::Tentacle'
-      #references_many :krakens, :class_name => 'Kraken'
 
       def all_tentacles
         if parent.nil?
