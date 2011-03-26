@@ -3,12 +3,23 @@ module Mongoid
   module Kraken
     class Tentacle
       include Mongoid::Document
-      field :name, :type => String
-      referenced_in :sucker, :class_name => 'Mongoid::Kraken::Sucker'
-      references_many :beaks, :class_name => 'Mongoid::Kraken::Beak' do
+      field :name,   :type => String
+      field :sucker, :type => String, :default => "String"
+      references_many :krakens, :class_name => 'Mongoid::Kraken::Kraken' do
         def self.extended(proxy)
-          proxy.target.selector = { "mongoid_kraken_tentacle_ids" => proxy.base['_id'] }
+          proxy.target.selector = { "tentacle_ids" => proxy.base['_id'] }
         end
+      end
+
+      def self.instantiate(attrs = nil)
+        super(attrs).__send__(:sucker_type_casting)
+      end
+
+    private
+      def sucker_type_casting
+        self.fields['sucker'].define_singleton_method(:get) { |value| value.to_s.constantize unless value.nil? }
+        self.fields['sucker'].define_singleton_method(:set) { |value| value.to_s unless value.nil? }
+        return self
       end
     end
   end
