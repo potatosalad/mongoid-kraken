@@ -1,9 +1,13 @@
+require 'mongoid/kraken/beak'
+require 'mongoid/kraken/sucker'
+require 'mongoid/kraken/tentacle'
+
 module Mongoid
   module Kraken
     extend ActiveSupport::Concern
 
     included do
-      referenced_in :beak
+      referenced_in :beak, :class_name => 'Mongoid::Kraken::Beak'
       after_initialize :summon_the_kraken!
     end
 
