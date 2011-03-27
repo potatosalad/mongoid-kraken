@@ -13,11 +13,14 @@ module Mongoid
           return self.tentacles
         else
           out = []
-          out << self.tentacles
           out << self.parent.all_tentacles
+          out << self.tentacles
           out
         end
       end
+
+      validates_presence_of :name
+      validates_uniqueness_of :name
     end
   end
 end
