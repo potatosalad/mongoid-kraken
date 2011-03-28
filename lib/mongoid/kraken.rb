@@ -29,11 +29,11 @@ module Mongoid
           self.kraken.all_tentacles.flatten.each do |tentacle|
             tentacle_name = tentacle.name.to_s
             if tentacle_name.ends_with?("_id")
-              kraken_referenced_in(tentacle)
+              self.class_eval(&kraken_referenced_in(self, tentacle))
             elsif tentacle_name.ends_with?("_ids")
-              kraken_references_and_referenced_in_many(tentacle)
+              self.class_eval(&kraken_references_and_referenced_in_many(self, tentacle))
             else
-              kraken_field(tentacle)
+              self.class_eval(&kraken_field(self, tentacle))
             end
           end
         end
@@ -41,27 +41,29 @@ module Mongoid
       end
 
     private
-      def kraken_field(tentacle)
-        tentacle_name = tentacle.name.to_s
-        self.class_eval(%Q{
-          field("#{tentacle_name}", :type => #{tentacle.sucker})
-        })
+      def kraken_field(klass, tentacle)
+        lambda do |base|
+          field(tentacle.name.to_s, tentacle.settings.reverse_merge(:type => tentacle.sucker))
+        end
       end
 
-      def kraken_referenced_in(tentacle)
+      def kraken_referenced_in(klass, tentacle)
         tentacle_name = tentacle.name.to_s
         tentacle_reference = tentacle_name.gsub(/_id$/, '')
-        self.class_eval(%Q{
-          referenced_in("#{tentacle_reference}", :class_name => "#{self.class.name}")
-        })
+        lambda do |base|
+          referenced_in(tentacle_reference, tentacle.settings.reverse_merge(:class_name => klass.class.name))
+        end
       end
 
-      def kraken_references_and_referenced_in_many(tentacle)
+      def kraken_references_and_referenced_in_many(klass, tentacle)
         tentacle_name = tentacle.name.to_s
         tentacle_references = tentacle_name.gsub(/_ids$/, '')
-        self.class_eval(%Q{
-          references_and_referenced_in_many("#{tentacle_references.pluralize}", :class_name => "#{self.class.name}")
-        })
+        lambda do |base|
+          references_and_referenced_in_many(
+            "#{tentacle_references.pluralize}",
+            tentacle.settings.reverse_merge(:class_name => klass.class.name)
+          )
+        end
       end
     end
   end
