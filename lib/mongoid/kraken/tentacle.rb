@@ -3,37 +3,54 @@ module Mongoid
   module Kraken
     class Tentacle
       include Mongoid::Document
-      field :name,     :type => String
-      field :label,    :type => String
-      field :settings, :type => Hash,   :default => {}
-      field :sucker,   :type => String, :default => "String"
-      references_many :krakens, :class_name => 'Mongoid::Kraken::Kraken' do
-        def self.extended(proxy)
-          proxy.target.selector = { "tentacle_ids" => proxy.base['_id'] }
-        end
-      end
 
-      def self.instantiate(attrs = nil)
-        super(attrs).__send__(:sucker_type_casting).__send__(:settings_type_casting)
+      field :name,  :type => String
+      field :label, :type => String
+
+      embeds_one :sucker, :class_name => 'Mongoid::Kraken::Sucker'
+
+      #references_many :krakens, :class_name => 'Mongoid::Kraken::Kraken' do
+      #  def self.extended(proxy)
+      #    proxy.target.selector = { "tentacle_ids" => proxy.base['_id'] }
+      #  end
+      #end
+
+      before_create    :sucker_default
+      after_initialize :sucker_default
+
+      %w(relation type settings).each do |key|
+        define_method("sucker_#{key}") do |*args|
+          sucker_default.send(key, *args)
+        end
+
+        define_method("sucker_#{key}=") do |*args|
+          sucker_default.send("#{key}=", *args)
+        end
       end
 
       validates_presence_of :name
-      validates_presence_of :sucker
-      validates_uniqueness_of :name
-
-    protected
-      def sucker_type_casting
-        self.fields['sucker'].define_singleton_method(:get) { |value| value.to_s.constantize unless value.nil? }
-        self.fields['sucker'].define_singleton_method(:set) { |value| value.to_s unless value.nil? }
-        return self
+      validates_associated :sucker
+      # Each Tentacle has a unique name and Sucker
+      validates_each :name do |document, attribute, value|
+        criteria = document.class.where({
+            'sucker.relation' => document.sucker.relation,
+            'sucker.type'     => document.sucker.type.to_s,
+            'sucker.settings' => document.sucker.settings
+          })
+        criteria = criteria.where(attribute => Regexp.new("^#{Regexp.escape(value.to_s)}$", Regexp::IGNORECASE))
+        if criteria.exists?
+          document.errors.add(
+            attribute,
+            :taken,
+            :value => value, :message => "and sucker are already taken"
+          )
+        end
       end
 
-      def settings_type_casting
-        self.fields['settings'].define_singleton_method(:get) do |value|
-          value ||= {}
-          value.symbolize_keys!
-        end
-        return self
+    private
+      def sucker_default
+        self.sucker ||= Mongoid::Kraken::Sucker.new
+        return self.sucker
       end
     end
   end
