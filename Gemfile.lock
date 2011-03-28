@@ -1,42 +1,52 @@
+PATH
+  remote: .
+  specs:
+    mongoid-kraken (0.0.0)
+      mongoid (>= 2.0.0.rc.8)
+
 GEM
   remote: http://rubygems.org/
   specs:
-    builder (3.0.0)
-    cucumber (0.10.2)
-      builder (>= 2.1.2)
-      diff-lcs (>= 1.1.2)
-      gherkin (>= 2.3.5)
-      json (>= 1.4.6)
-      term-ansicolor (>= 1.0.5)
+    ZenTest (4.5.0)
+    activemodel (3.0.5)
+      activesupport (= 3.0.5)
+      builder (~> 2.1.2)
+      i18n (~> 0.4)
+    activesupport (3.0.5)
+    autotest (4.4.6)
+      ZenTest (>= 4.4.1)
+    bson (1.2.4)
+    bson_ext (1.2.4)
+    builder (2.1.2)
     diff-lcs (1.1.2)
-    gherkin (2.3.5)
-      json (>= 1.4.6)
-    git (1.2.5)
-    jeweler (1.5.2)
-      bundler (~> 1.0.0)
-      git (>= 1.2.5)
-      rake
-    json (1.5.1)
+    i18n (0.5.0)
+    mongo (1.2.4)
+      bson (>= 1.2.4)
+    mongoid (2.0.0.rc.8)
+      activemodel (~> 3.0)
+      mongo (~> 1.2)
+      tzinfo (~> 0.3.22)
+      will_paginate (~> 3.0.pre)
     rake (0.8.7)
-    rcov (0.9.9)
-    rspec (2.3.0)
-      rspec-core (~> 2.3.0)
-      rspec-expectations (~> 2.3.0)
-      rspec-mocks (~> 2.3.0)
-    rspec-core (2.3.1)
-    rspec-expectations (2.3.0)
+    rspec (2.5.0)
+      rspec-core (~> 2.5.0)
+      rspec-expectations (~> 2.5.0)
+      rspec-mocks (~> 2.5.0)
+    rspec-core (2.5.1)
+    rspec-expectations (2.5.0)
       diff-lcs (~> 1.1.2)
-    rspec-mocks (2.3.0)
-    term-ansicolor (1.0.5)
+    rspec-mocks (2.5.0)
+    tzinfo (0.3.25)
+    will_paginate (3.0.pre2)
     yard (0.6.5)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.0.0)
-  cucumber
-  jeweler (~> 1.5.2)
-  rcov
-  rspec (~> 2.3.0)
-  yard (~> 0.6.0)
+  autotest (>= 4.4)
+  bson_ext (>= 1.2.4)
+  mongoid-kraken!
+  rake
+  rspec (~> 2.5)
+  yard (>= 0.6.5)

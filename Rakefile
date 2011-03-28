@@ -1,44 +1,47 @@
-require 'rubygems'
-require 'bundler'
-begin
-  Bundler.setup(:default, :development)
-rescue Bundler::BundlerError => e
-  $stderr.puts e.message
-  $stderr.puts "Run `bundle install` to install missing gems"
-  exit e.status_code
-end
-require 'rake'
+require "bundler"
+Bundler.setup
 
-require 'jeweler'
-Jeweler::Tasks.new do |gem|
-  # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "mongoid-kraken"
-  gem.homepage = "http://github.com/potatosalad/mongoid-kraken"
-  gem.license = "MIT"
-  gem.summary = %Q{Kraken is EAV done right}
-  gem.description = %Q{Kraken is an implementation of the EAV (Entity-Attribute-Value) model using mongoid.}
-  gem.email = "potatosaladx@gmail.com"
-  gem.authors = ["Andrew Bennett"]
-  # Include your dependencies below. Runtime dependencies are required when using your gem,
-  # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
-  #  gem.add_runtime_dependency 'jabber4r', '> 0.1'
-  #  gem.add_development_dependency 'rspec', '> 1.2.3'
-end
-Jeweler::RubygemsDotOrgTasks.new
+require "rake"
+require "rspec"
+require "rspec/core/rake_task"
 
-require 'rspec/core'
-require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.pattern = FileList['spec/**/*_spec.rb']
+$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
+require "mongoid/kraken/version"
+
+task :gem => :build
+desc "Build the mongoid-kraken.gem file"
+task :build do
+  system "gem build mongoid-kraken.gemspec"
 end
 
-RSpec::Core::RakeTask.new(:rcov) do |spec|
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
+desc "Install the mongoid-kraken.gem file"
+task :install => :build do
+  system "sudo gem install mongoid-kraken-#{Mongoid::Kraken::VERSION}.gem"
 end
 
-require 'cucumber/rake/task'
-Cucumber::Rake::Task.new(:features)
+desc "Tag a release and push the mongoid-kraken.gem file"
+task :release => :build do
+  system "git tag -a #{Mongoid::Kraken::VERSION} -m 'Tagging #{Mongoid::Kraken::VERSION}'"
+  system "git push --tags"
+  system "gem push mongoid-#{Mongoid::VERSION}.gem"
+end
+
+Rspec::Core::RakeTask.new(:spec) do |spec|
+  spec.pattern = "spec/**/*_spec.rb"
+end
+
+Rspec::Core::RakeTask.new("spec:unit") do |spec|
+  spec.pattern = "spec/unit/**/*_spec.rb"
+end
+
+Rspec::Core::RakeTask.new("spec:functional") do |spec|
+  spec.pattern = "spec/functional/**/*_spec.rb"
+end
+
+Rspec::Core::RakeTask.new('spec:progress') do |spec|
+  spec.rspec_opts = %w(--format progress)
+  spec.pattern = "spec/**/*_spec.rb"
+end
 
 task :default => :spec
 
